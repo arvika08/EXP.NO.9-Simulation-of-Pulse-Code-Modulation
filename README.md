@@ -131,4 +131,3 @@ plt.show()
 The PCM system was successfully simulated. The analog message signal was sampled, quantized, and encoded into a digital PCM signal. The simulation also showed the effect of quantization and basic demodulated output. The plots visually represent how PCM works in digital communication systems
 
  
-# RESULT / CONCLUSIONS
