@@ -1,9 +1,9 @@
-# EXP.NO.4-Simulation-of-Pulse-Code-Modulation
+# EXP.NO.4-Simulation-of-Sampling and Multiplexing in Pulse code modulation
 
 
 # AIM:
 
-To simulate the process of Pulse Code Modulation (PCM), including sampling, quantization, encoding, and basic visualization of modulation/demodulation using Python.
+To simulate the process of sampling and multiplexing in PCM using python
 
 # SOFTWARE REQUIRED:
 
@@ -22,19 +22,19 @@ matplotlib for plotting
 
 Start the program.
 
-Initialize parameters like sampling rate, frequency of analog signal, duration, and number of quantization levels.
+Two distinct analog signals (50Hz and 120Hz) are successfully generated and quantized.
 
-Generate time vector using the sampling rate and duration.
+Their PCM representations are calculated and visualized.
 
-Create an analog message signal using a sine wave.
+A time-division multiplexed PCM signal is constructed by interleaving PCM values from both signals.
 
-Generate a clock signal with a higher frequency to simulate the sampling clock.
+The output plots demonstrate:
 
-Quantize the analog message signal using defined quantization levels.
+Clear quantization of both signals.
 
-Encode the quantized signal into digital form by converting amplitude values to integer levels (PCM).
+Proper interleaving of PCM values for transmission in a multiplexed form.
 
-Plot the message signal, clock signal, quantized (PCM) signal, and demodulated signal.
+A visual representation of how TDM works with PCM for efficient digital signal transmission.
 
 End the program.
 
@@ -47,33 +47,51 @@ import numpy as np
 
 sampling_rate = 5000
 
-frequency = 50
-
 duration = 0.1
 
 quantization_levels = 16
 
 t = np.linspace(0, duration, int(sampling_rate * duration), endpoint=False)
 
-message_signal = np.sin(2 * np.pi * frequency * t)
+frequency1 = 50
+
+frequency2 = 120
+
+message_signal1 = np.sin(2 * np.pi * frequency1 * t)
+
+message_signal2 = np.sin(2 * np.pi * frequency2 * t)
+
+def quantize(signal, levels):
+
+    step = (max(signal) - min(signal)) / levels
+    
+    quantized = np.round(signal / step) * step
+    
+    pcm = ((quantized - min(quantized)) / step).astype(int)
+    
+    return quantized, pcm
+
+quantized_signal1, pcm_signal1 = quantize(message_signal1, quantization_levels)
+
+quantized_signal2, pcm_signal2 = quantize(message_signal2, quantization_levels)
+
+multiplexed_pcm = np.empty((pcm_signal1.size + pcm_signal2.size,), dtype=int)
+
+multiplexed_pcm[0::2] = pcm_signal1
+
+multiplexed_pcm[1::2] = pcm_signal2
+
+t_mux = np.linspace(0, duration, multiplexed_pcm.size, endpoint=False)
 
 clock_signal = np.sign(np.sin(2 * np.pi * 200 * t))
 
-quantization_step = (max(message_signal) - min(message_signal)) / quantization_levels
+plt.figure(figsize=(14, 12))
 
-quantized_signal = np.round(message_signal / quantization_step) * quantization_step
+plt.subplot(8, 1, 1)
 
-pcm_signal = (quantized_signal - min(quantized_signal)) / quantization_step
+plt.plot(t, message_signal1, label="Message Signal 1 (50Hz)", color='blue')
 
-pcm_signal = pcm_signal.astype(int)
-
-plt.figure(figsize=(12, 10))
-
-plt.subplot(4, 1, 1)
-
-plt.plot(t, message_signal, label="Message Signal (Analog)", color='blue')
-
-plt.title("Message Signal (Analog)")
+plt.title("Original Message Signal 1")
 
 plt.xlabel("Time [s]")
 
@@ -81,23 +99,13 @@ plt.ylabel("Amplitude")
 
 plt.grid(True)
 
-plt.subplot(4, 1, 2)
+plt.legend()
 
-plt.plot(t, clock_signal, label="Clock Signal (Increased Frequency)", color='green')
+plt.subplot(8, 1, 2)
 
-plt.title("Clock Signal (Increased Frequency)")
+plt.plot(t, clock_signal, label="Clock Signal", color='green')
 
-plt.xlabel("Time [s]")
-
-plt.ylabel("Amplitude")
-
-plt.grid(True)
-
-plt.subplot(4, 1, 3)
-
-plt.step(t, quantized_signal, label="PCM Modulated Signal", color='red')
-
-plt.title("PCM Modulated Signal (Quantized)")
+plt.title("Clock Signal")
 
 plt.xlabel("Time [s]")
 
@@ -105,17 +113,89 @@ plt.ylabel("Amplitude")
 
 plt.grid(True)
 
-plt.subplot(4, 1, 4)
+plt.subplot(8, 1, 3)
 
-plt.plot(t, quantized_signal, label="Signal Demodulation", color='purple', linestyle='--')
+plt.step(t, quantized_signal1, label="Quantized Signal 1", color='red')
 
-plt.title("Signal Without Demodulation")
+plt.title("Quantized Signals")
 
 plt.xlabel("Time [s]")
 
 plt.ylabel("Amplitude")
 
 plt.grid(True)
+
+plt.legend()
+
+plt.subplot(8, 1, 4)
+
+plt.plot(t, message_signal2, label="Message Signal 2 (120Hz)", color='orange', alpha=0.7)
+
+plt.title("Original Message Signal 2")
+
+plt.xlabel("Time [s]")
+
+plt.ylabel("Amplitude")
+
+plt.grid(True)
+
+plt.legend()
+
+plt.subplot(8, 1, 5)
+
+plt.plot(t, clock_signal, label="Clock Signal", color='green')
+
+plt.title("Clock Signal")
+
+plt.xlabel("Time [s]")
+
+plt.ylabel("Amplitude")
+
+plt.grid(True)
+
+plt.subplot(8, 1, 6)
+
+plt.step(t, quantized_signal2, label="Quantized Signal 2", color='purple', alpha=0.7)
+
+plt.title("Quantized Signals")
+
+plt.xlabel("Time [s]")
+
+plt.ylabel("Amplitude")
+
+plt.grid(True)
+
+plt.legend()
+
+plt.subplot(8, 1, 7)
+
+plt.step(t, quantized_signal1, label="Quantized Signal 1", color='red')
+
+plt.step(t, quantized_signal2, label="Quantized Signal 2", color='purple', alpha=0.7)
+
+plt.title("Quantized Signals")
+
+plt.xlabel("Time [s]")
+
+plt.ylabel("Amplitude")
+
+plt.grid(True)
+
+plt.legend()
+
+plt.subplot(8, 1, 8)
+
+plt.step(t_mux, multiplexed_pcm, label="Multiplexed PCM Signal", color='black')
+
+plt.title("Multiplexed PCM Signal (Interleaved)")
+
+plt.xlabel("Time [s]")
+
+plt.ylabel("PCM Value")
+
+plt.grid(True)
+
+plt.legend()
 
 plt.tight_layout()
 
@@ -123,11 +203,11 @@ plt.show()
 
 
 # OUTPUT:
+![image](https://github.com/user-attachments/assets/cacbd584-36cf-4db9-8532-3588f2c4d8f5)
 
-![image](https://github.com/user-attachments/assets/6d04a472-4819-49ec-8c2b-ef0b356549d8)
 
 # Result:
 
-The PCM system was successfully simulated. The analog message signal was sampled, quantized, and encoded into a digital PCM signal. The simulation also showed the effect of quantization and basic demodulated output. The plots visually represent how PCM works in digital communication systems
+Thus the execution of Pulse code modulation using sampling and Multiplexing technique is successful.
 
  
